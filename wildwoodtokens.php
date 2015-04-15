@@ -133,9 +133,8 @@ function wildwoodtokens_civicrm_tokenValues(&$values, $cids, $job = null, $token
 
         if ($days < 42) {
           $exp_date = date('Y-m-d', strtotime($exp_date . "+1 year"));
-          $values[$cid]['token_name.date'] = $exp_date;
         }
-          $values[$cid]['token_name.date'] = $exp_date;
+        $values[$cid]['token_name.date'] = $exp_date;
       }
     }
   }
