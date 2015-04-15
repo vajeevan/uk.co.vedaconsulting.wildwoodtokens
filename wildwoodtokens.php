@@ -119,33 +119,32 @@ function wildwoodtokens_civicrm_tokenValues(&$values, $cids, $job = null, $token
     foreach ($cids as $cid) {
 
       $contactIDString = implode(',', array_values($cids));
-      $whereClause = "civicrm_contact.id IN ($contactIDString)";
+      $whereClause = "cm.contact_id IN ($contactIDString)";
 
-      $query = "SELECT contact_id,start_date,membership_expiry_date_8 FROM  civicrm_membership
-      LEFT JOIN civicrm_value_membership_expiry_date_5 ON(civicrm_value_membership_expiry_date_5.entity_id=civicrm_membership.id)
-      LEFT JOIN civicrm_contact ON(civicrm_contact.id=civicrm_membership.contact_id)
-      WHERE $whereClause";
+      $query = "SELECT cm.contact_id, cv.membership_expiry_date_10 as renewal_date FROM civicrm_membership cm
+      JOIN civicrm_value_wildwood_memberships_7 cv ON cm.id = cv.entity_id WHERE $whereClause";
 
       $dao = CRM_Core_DAO::executeQuery($query);
-
       while ($dao->fetch()) {
-        $start_date = $dao->start_date;
-        $exp_date = $dao->membership_expiry_date_8;
+        $current_date = date('Y-m-d');
+        $exp_date = $dao->renewal_date;
 
-        $date1 = new DateTime($start_date);
-        $date2 = new DateTime($exp_date);
+        $days = _wildwoodtokens_get_date_difference($exp_date, $current_date);
 
-        $intervals = $date1->diff($date2);
-
-        $date = "$intervals->d";
-        $month = "$intervals->m";
-        $year = "$intervals->y";
-
-        if ($date < 42) {
+        if ($days < 42) {
           $exp_date = date('Y-m-d', strtotime($exp_date . "+1 year"));
+          $values[$cid]['token_name.date'] = $exp_date;
         }
-        $values[$cid]['token_name.date'] = $exp_date;
+          $values[$cid]['token_name.date'] = $exp_date;
       }
     }
   }
+}
+
+/*
+ * Function to get number of days difference between 2 dates
+ */
+
+function _wildwoodtokens_get_date_difference($date1, $date2) {
+  return floor((strtotime($date1) - strtotime($date2)) / (60 * 60 * 24));
 }
